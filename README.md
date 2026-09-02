@@ -1,83 +1,114 @@
-# 👟 CyberSneaker Pro X — 3D Custom Configurator
+# 🌐 Universal 3D Product Customizer Studio
 
-A production-grade, ultra-responsive **3D Custom Footwear Configurator** web application built with **Next.js 14+ (App Router)**, **React Three Fiber (R3F)**, **@react-three/drei**, **Three.js**, **Zustand**, **Tailwind CSS**, and **Lucide Icons**.
+A production-grade, ultra-responsive **Universal 3D Product Customizer Studio** inspired by Sketchfab's multi-model configurators. Built with **Next.js 14+ (App Router)**, **React Three Fiber (R3F)**, **@react-three/drei**, **Three.js**, **Zustand**, **Tailwind CSS**, and **Lucide Icons**.
 
-![CyberSneaker Pro X](https://img.shields.io/badge/Status-Production%20Ready-00F0FF?style=for-the-badge)
+![Universal 3D Studio](https://img.shields.io/badge/Status-Production%20Ready-00F0FF?style=for-the-badge)
 ![Next.js 14](https://img.shields.io/badge/Next.js-14.2-black?style=for-the-badge&logo=next.js)
 ![React Three Fiber](https://img.shields.io/badge/R3F-Three.js-blue?style=for-the-badge&logo=three.js)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=for-the-badge&logo=tailwind-css)
 
 ---
 
-## ⚡ Features & Capabilities
+## ⚡ Multi-Model Catalog & Features
 
-- 🕶️ **3D WebGL Viewport (R3F & Drei)**:
-  - Custom procedural aerodynamic sneaker geometry with 7 modular mesh zones (`Sole & Tread`, `Kinetic Air Pods`, `Upper Aeromesh`, `Ankle Collar & Liner`, `Kinetic Laces`, `Aero Fin Accents`, `Rear Exhaust Heat-Sink`).
-  - Physically Based Rendering (PBR) dynamic materials:
-    - *Matte Cyber-Leather* (Roughness: 0.82, Metalness: 0.08)
-    - *Anodized Titanium* (Roughness: 0.22, Metalness: 0.88, Clearcoat: 0.4)
-    - *Forged Carbon Fiber* (Roughness: 0.32, Metalness: 0.65, Clearcoat: 0.7)
-    - *High-Gloss Patent Polymer* (Roughness: 0.06, Metalness: 0.15, Clearcoat: 1.0)
-    - *Overclocked Neon Glow* (Emissive Intensity: 2.4)
-- 💥 **Exploded Layer Breakdown**:
-  - Smooth animation lerping all shoe layers outward in 3D along their respective axes.
-- 🎯 **Interactive 3D Hotspots**:
-  - Floating 3D HTML hotspot pins positioned on the sneaker that highlight and switch the active configuration zone on hover/click.
-- 💡 **Dynamic Studio Lighting Rigs**:
-  - Preset studio environments: *Cyber Neon Grid*, *Studio Clean White*, *Deep Obsidian*, and *Holographic Synth Sunset*.
-- 🎥 **Smooth Camera Lerping**:
-  - Clamped polar angles (preventing flips beneath the ground) with preset camera docks (*Isometric*, *Lateral Profile*, *Top-Down*, *Sole Underside*, *Quarter Front*).
-- 💰 **Live Dynamic Price Engine**:
-  - Base price calculation with instant material surcharge tracking and animated counter.
-- 🎨 **Curated Cyber Themes**:
-  - One-click aesthetics: *Neo Tokyo 2077*, *Stealth Obsidian*, *Hyper Titanium*, *Solar Flare*, *Synthwave Sunset*, and *Toxic Emerald*.
-- 📷 **High-Res Snapshot Capture**:
-  - Instant canvas snapshot generator producing downloadable `.png` renders with `preserveDrawingBuffer`.
-- 📋 **Spec Sheet & Checkout Suite**:
-  - Serialized Build Number (`CSPX-XXXX-XXXX`), itemized Bill of Materials (BOM), spec download (`.txt`), and a 3-step interactive checkout flow with confetti celebrations.
-- 🔊 **Procedural Web Audio SFX**:
-  - Synthesized sci-fi clicks, color ticks, snaps, and success fanfares without external audio asset dependencies.
+### 1. 🗂️ Built-in Multi-Category 3D Models
+- 🚗 **Vehicles — Apex GT-X Hypercar**:
+  - Zones: `Exterior Body`, `Forged Aero Rims`, `Cockpit Glass`, `Brake Calipers`, `Aero Splitters & Wing`.
+- 🏍️ **Two-Wheelers — Valkyrie R9 Cafe Racer**:
+  - Zones: `Fuel Tank & Cowl`, `Stitched Leather Saddle`, `Trellis Chassis Frame`, `Titanium Exhaust`, `Spoked Wheels`.
+- 🛋️ **Furniture — Nordic Haven 3-Seater Sofa**:
+  - Zones: `Main Upholstery Fabric`, `Accent Bolster Cushions`, `Tapered Support Legs`, `Perimeter Base Trim`.
+- 👟 **Footwear — CyberSneaker Pro X**:
+  - Zones: `Aeromesh Upper`, `Outsole & Tread`, `Kinetic Air Pods`, `Laces & Fasteners`, `Aero Fins`.
+- 🎧 **Tech Gear — Aura Pro Studio Wireless Headphones**:
+  - Zones: `Acoustic Earcups`, `Structural Headband`, `Memory Foam Cushions`, `Gimbal Ring & Badges`.
+- 📂 **Custom .GLB / .GLTF Drag & Drop & Direct URL**:
+  - Direct file drop onto the 3D canvas or paste any remote `.glb` URL.
+  - Automatic scene graph traversal (`scene.traverse`) with smart mesh node detection and dynamic PBR binding.
 
 ---
 
-## 🛠️ Tech Stack
+### 2. 🎨 Sketchfab-Grade Minimalist UI & Navigation
+- **Top Navigation Bar**:
+  - Category Switcher Pill Carousel: `[ 🚗 Vehicles ] [ 🏍️ Bikes ] [ 🛋️ Furniture ] [ 👟 Footwear ] [ 🎧 Tech ] [ 📂 Upload .GLB ]`.
+  - Studio Lighting Rig: `Studio Neutral`, `Cyber Neon`, `Golden Hour Daylight`, `Deep Obsidian`.
+  - Wireframe toggle, Cyber audio feedback toggle, and reset button.
+- **Bottom Customization Dock**:
+  - Dynamic Part Selector specific to the active model with live color indicator dots.
+  - PBR Material Finish selector:
+    * `Matte Finish` (Roughness: 0.85, Metalness: 0.05)
+    * `Metallic / Anodized` (Roughness: 0.22, Metalness: 0.90, Clearcoat: 0.5)
+    * `High Gloss / Clearcoat` (Roughness: 0.08, Metalness: 0.15, Clearcoat: 1.0)
+    * `Leather / Textured Fabric` (Roughness: 0.95, Metalness: 0.02)
+    * `Forged Carbon Weave` (Roughness: 0.35, Metalness: 0.60, Clearcoat: 0.7)
+  - Color Swatches: 10 curated tones + custom Hex Color Picker.
+  - Camera Quick Presets: `Front 3/4`, `Side View`, `Top Down`, `Detail Zoom`, and `Auto Orbit`.
 
-- **Framework**: [Next.js 14](https://nextjs.org/) (App Router, TypeScript)
-- **3D Graphics**: [Three.js](https://threejs.org/), [@react-three/fiber](https://docs.pmnd.rs/react-three-fiber), [@react-three/drei](https://github.com/pmndrs/drei)
-- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **Effects & Exports**: [Canvas Confetti](https://www.npmjs.com/package/canvas-confetti)
+---
+
+### 3. 💾 "Save My Build" & Export System
+- 📸 **4K Snapshot Render**: Captures high-res transparent or studio-background PNG of the customized item.
+- 📋 **Build Spec Sheet & Buy Guide Modal**:
+  - Itemized Bill of Materials (BOM) with finishes, hex codes, and individual surcharges.
+  - Serialized Build ID (`APX-XXXX-XXXX`).
+  - **Export Technical Spec (.TXT)**: Formatted engineering specification sheet download.
+  - **Save Configuration (.JSON)**: Serialized build state for persistence or sharing.
+  - **Copy JSON Config**: Instant clipboard copy.
+  - **Send to Fabrication Lab**: Simulated order placement with celebratory confetti fireworks.
+
+---
+
+## 📁 Source Architecture
+
+```
+CyberSneaker_Configurator/
+├── app/
+│   ├── layout.tsx                # Studio layout with viewport & font tokens
+│   ├── page.tsx                  # Root entry rendering StudioPage
+│   ├── studio/
+│   │   └── page.tsx              # Universal 3D Product Customizer Studio
+│   └── configurator/
+│       └── page.tsx              # CyberSneaker dedicated configurator
+├── components/
+│   └── studio/
+│       ├── StudioCanvas.tsx      # R3F Canvas, CameraController, Lighting, & Drag-Drop GLB
+│       ├── SceneModelManager.tsx # Dynamic model switcher
+│       ├── TopCategoryNav.tsx    # Category pills, environments, & quick actions
+│       ├── CustomizerDock.tsx    # Sketchfab-style bottom customizer dock
+│       ├── BuildSpecModal.tsx    # BOM table, spec download, JSON export, checkout
+│       ├── GlbUploadModal.tsx    # Custom GLB URL loader & sample models
+│       └── models/
+│           ├── ProceduralCar.tsx         # Apex GT-X hypercar
+│           ├── ProceduralBike.tsx        # Valkyrie R9 motorcycle
+│           ├── ProceduralSofa.tsx        # Nordic Haven Scandinavian sofa
+│           ├── ProceduralSneaker.tsx     # CyberSneaker kinetic footwear
+│           ├── ProceduralHeadphones.tsx  # Aura Pro studio headphones
+│           ├── DynamicGlbViewer.tsx      # Universal GLB mesh traversal & material binder
+│           └── StudioMeshMaterial.tsx    # Reactive PBR physical material
+├── data/
+│   └── modelsCatalog.ts          # Catalog definitions, materials, & color swatches
+├── store/
+│   ├── useStudioStore.ts         # Universal Studio Zustand state engine
+│   └── useConfiguratorStore.ts   # Sneaker dedicated store
+├── lib/
+│   ├── audio.ts                  # Web Audio procedural sound effects
+│   └── utils.ts                  # Currency & class utilities
+└── package.json
+```
 
 ---
 
 ## 🚀 Getting Started
 
-### 1. Clone the repository
 ```bash
-git clone https://github.com/aliyannn/3D-Configurator.git
-cd 3D-Configurator
-```
-
-### 2. Install dependencies
-```bash
+# Install dependencies
 npm install
-```
 
-### 3. Run development server
-```bash
+# Run development server
 npm run dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### 4. Build for production
-```bash
+# Build for production
 npm run build
-npm run start
 ```
 
----
-
-## 📄 License
-MIT License. Built with precision for next-generation web 3D product customization.
+Open [http://localhost:3000](http://localhost:3000) to launch the studio.

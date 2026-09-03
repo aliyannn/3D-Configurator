@@ -7,6 +7,24 @@ import { DynamicModelViewer } from "./DynamicModelViewer";
 import { ProceduralCar } from "@/components/studio/models/ProceduralCar";
 import { StudioMaterialType } from "@/data/modelsCatalog";
 
+// Error Boundary to prevent any corrupt custom 3D file from crashing React Suspense
+class ModelErrorBoundary extends React.Component<
+  { fallback: React.ReactNode; children: React.ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: any) {
+    console.error("Custom 3D Model Render Caught:", error);
+  }
+  render() {
+    if (this.state.hasError) return this.props.fallback;
+    return this.props.children;
+  }
+}
+
 export function ModelViewer() {
   const activeModelId = useStudioStore((state) => state.activeModelId);
   const customGlb = useStudioStore((state) => state.customGlb);
@@ -29,17 +47,19 @@ export function ModelViewer() {
     return { partColors: colors, partFinishes: finishes };
   }, [configurations.custom]);
 
-  // 1. Custom Uploaded .GLB / .GLTF
+  // 1. Custom Uploaded .GLB / .GLTF (Safely Isolated in Error Boundary)
   if (activeModelId === "custom" && customGlb?.url) {
     return (
-      <DynamicModelViewer
-        url={customGlb.url}
-        selectedPart={activePartId}
-        partColors={partColors}
-        partFinishes={partFinishes}
-        onMeshListExtracted={updateDetectedMeshes}
-        onMeshClick={setActivePartId}
-      />
+      <ModelErrorBoundary fallback={<HondaCG125Model />}>
+        <DynamicModelViewer
+          url={customGlb.url}
+          selectedPart={activePartId}
+          partColors={partColors}
+          partFinishes={partFinishes}
+          onMeshListExtracted={updateDetectedMeshes}
+          onMeshClick={setActivePartId}
+        />
+      </ModelErrorBoundary>
     );
   }
 

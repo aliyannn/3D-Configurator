@@ -1,66 +1,101 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
-import { useGLTF, Center, Bounds } from "@react-three/drei";
+import React, { useEffect, useState } from "react";
+import { Center, Bounds } from "@react-three/drei";
 import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { StudioMaterialType } from "@/data/modelsCatalog";
-import { cyberAudio } from "@/lib/audio";
 import { useStudioStore } from "@/store/useStudioStore";
+import { cyberAudio } from "@/lib/audio";
 
-interface DynamicModelProps {
+interface DynamicViewerProps {
   url: string;
-  selectedPart: string | null;
+  onMeshListExtracted?: (meshNames: string[]) => void;
+  onMeshClick?: (meshName: string) => void;
+  selectedPart?: string | null;
   partColors: Record<string, string>;
   partFinishes: Record<string, StudioMaterialType>;
-  onMeshListExtracted: (meshNames: string[]) => void;
-  onMeshClick: (meshName: string) => void;
 }
 
 export function DynamicModelViewer({
   url,
+  onMeshListExtracted,
+  onMeshClick,
   selectedPart,
   partColors,
   partFinishes,
-  onMeshListExtracted,
-  onMeshClick,
-}: DynamicModelProps) {
-  // Load any generic GLB/GLTF via URL
-  const { scene } = useGLTF(url);
-
-  // Deep clone scene so multiple uploads don't cross-pollute cached memory
-  const clonedScene = useMemo(() => scene.clone(true), [scene]);
+}: DynamicViewerProps) {
+  const [modelScene, setModelScene] = useState<THREE.Group | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const soundEnabled = useStudioStore((state) => state.soundEnabled);
 
-  // Extract all customizable meshes dynamically
   useEffect(() => {
-    const detectedMeshes: string[] = [];
-    clonedScene.traverse((child) => {
-      if ((child as THREE.Mesh).isMesh) {
-        const mesh = child as THREE.Mesh;
-        // Generate a readable part name
-        const name = mesh.name || `Part_${detectedMeshes.length + 1}`;
-        mesh.name = name;
-        if (!detectedMeshes.includes(name)) {
-          detectedMeshes.push(name);
-        }
-        // Enable shadows
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-      }
-    });
-    onMeshListExtracted(detectedMeshes);
-  }, [clonedScene, onMeshListExtracted]);
+    if (!url) return;
 
-  // Apply real-time dynamic materials to the clicked/selected meshes
+    let isMounted = true;
+    const loader = new GLTFLoader();
+
+    // Configure Draco Loader for compressed Sketchfab models
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.6/");
+    loader.setDRACOLoader(dracoLoader);
+
+    loader.load(
+      url,
+      (gltf) => {
+        if (!isMounted) {
+          dracoLoader.dispose();
+          return;
+        }
+
+        const scene = gltf.scene;
+        const detectedMeshes: string[] = [];
+
+        scene.traverse((child) => {
+          if ((child as THREE.Mesh).isMesh) {
+            const mesh = child as THREE.Mesh;
+            const name = mesh.name || `Part_${detectedMeshes.length + 1}`;
+            mesh.name = name;
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            if (!detectedMeshes.includes(name)) {
+              detectedMeshes.push(name);
+            }
+          }
+        });
+
+        setModelScene(scene);
+        setLoadError(null);
+        if (onMeshListExtracted) {
+          onMeshListExtracted(detectedMeshes);
+        }
+      },
+      undefined,
+      (err) => {
+        if (!isMounted) return;
+        console.error("Error loading GLTF:", err);
+        setLoadError("Failed to parse 3D file. Please ensure it is a valid .glb or .gltf model.");
+      }
+    );
+
+    return () => {
+      isMounted = false;
+      dracoLoader.dispose();
+    };
+  }, [url, onMeshListExtracted]);
+
+  // Apply real-time material & color updates
   useEffect(() => {
-    clonedScene.traverse((child) => {
+    if (!modelScene) return;
+
+    modelScene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
         const color = partColors[mesh.name];
         const finish = partFinishes[mesh.name] || "gloss";
 
         if (color) {
-          // Clone original material to prevent affecting other meshes
           mesh.material = (mesh.material as THREE.Material).clone();
           const mat = mesh.material as THREE.MeshStandardMaterial;
           mat.color = new THREE.Color(color);
@@ -70,8 +105,8 @@ export function DynamicModelViewer({
             mat.metalness = 0.95;
             mat.envMapIntensity = 2.5;
           } else if (finish === "matte") {
-            mat.roughness = 0.82;
-            mat.metalness = 0.15;
+            mat.roughness = 0.85;
+            mat.metalness = 0.05;
             mat.envMapIntensity = 1.0;
           } else {
             // High Gloss
@@ -80,7 +115,6 @@ export function DynamicModelViewer({
             mat.envMapIntensity = 2.0;
           }
 
-          // Subtle emissive highlight on currently selected mesh
           if (mesh.name === selectedPart) {
             mat.emissive = new THREE.Color(color).multiplyScalar(0.2);
           } else {
@@ -91,16 +125,19 @@ export function DynamicModelViewer({
         }
       }
     });
-  }, [clonedScene, partColors, partFinishes, selectedPart]);
+  }, [modelScene, partColors, partFinishes, selectedPart]);
+
+  if (loadError) return null;
+  if (!modelScene) return null;
 
   return (
     <Bounds fit clip margin={1.2} observe>
       <Center top>
         <primitive
-          object={clonedScene}
+          object={modelScene}
           onClick={(e: any) => {
             e.stopPropagation();
-            if (e.object?.name) {
+            if (e.object?.name && onMeshClick) {
               if (soundEnabled) cyberAudio.playSelect();
               onMeshClick(e.object.name);
             }

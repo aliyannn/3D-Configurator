@@ -61,6 +61,7 @@ interface StudioState {
   // Actions
   setActiveModelId: (id: string) => void;
   setCustomGlb: (data: CustomGlbData | null) => void;
+  updateDetectedMeshes: (meshNames: string[]) => void;
   setActivePartId: (partId: string) => void;
   setHoveredPartId: (partId: string | null) => void;
   setPartColor: (modelId: string, partId: string, color: string) => void;
@@ -181,6 +182,55 @@ export const useStudioStore = create<StudioState>((set, get) => ({
         },
         buildSerial: makeSerialCode("GLB"),
         glbUploadModalOpen: false,
+      };
+    });
+  },
+
+  updateDetectedMeshes: (meshNames: string[]) => {
+    set((state) => {
+      if (!state.customGlb) return state;
+
+      const existingConfig = state.configurations.custom || {};
+      const newConfig: Record<string, PartState> = { ...existingConfig };
+
+      const defaultColors = [
+        "#991B1B",
+        "#0F172A",
+        "#E2E8F0",
+        "#78350F",
+        "#D97706",
+        "#0284C7",
+        "#064E3B",
+        "#F8FAFC",
+      ];
+
+      const parts = meshNames.map((name, idx) => {
+        const defaultColor = defaultColors[idx % defaultColors.length];
+        if (!newConfig[name]) {
+          newConfig[name] = { color: defaultColor, material: "gloss" };
+        }
+        return {
+          id: name,
+          name: name.replace(/[-_]/g, " "),
+          icon: "⚡",
+          description: `Custom 3D mesh: ${name}`,
+          defaultColor,
+          defaultMaterial: "gloss" as StudioMaterialType,
+        };
+      });
+
+      return {
+        customGlb: {
+          ...state.customGlb,
+          detectedParts: parts,
+        },
+        activePartId: parts.some((p) => p.id === state.activePartId)
+          ? state.activePartId
+          : parts[0]?.id || "part_1",
+        configurations: {
+          ...state.configurations,
+          custom: newConfig,
+        },
       };
     });
   },

@@ -4,7 +4,7 @@ import React, { useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { UIOverlay } from "@/components/configurator/UIOverlay";
 import { SpecSheetModal } from "@/components/configurator/SpecSheetModal";
-import { GlbUploadModal } from "@/components/studio/GlbUploadModal";
+import { FileUploader } from "@/components/configurator/FileUploader";
 import { useStudioStore } from "@/store/useStudioStore";
 
 // Dynamically import ConfiguratorCanvas with SSR disabled for safe WebGL initialization
@@ -75,8 +75,8 @@ export default function ConfiguratorPage() {
       {/* Mechanic-Ready Printable Spec Sheet Modal */}
       <SpecSheetModal />
 
-      {/* Custom 3D Model Upload Modal */}
-      <GlbUploadModal />
+      {/* Universal Generic 3D Model File Uploader */}
+      <FileUploader />
     </main>
   );
 }

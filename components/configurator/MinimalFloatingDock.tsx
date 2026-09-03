@@ -5,36 +5,14 @@ import { useStudioStore, CameraPreset } from "@/store/useStudioStore";
 import { CURATED_COLOR_SWATCHES, StudioMaterialType } from "@/data/modelsCatalog";
 import { formatCurrency } from "@/lib/utils";
 import { cyberAudio } from "@/lib/audio";
-import { Check, Sparkles } from "lucide-react";
+import { Check } from "lucide-react";
 
-// Icon mapping per model part
-const PART_EMOJIS: Record<string, string> = {
-  // Car
-  body: "🚗",
+// Tab icons mapping
+const PART_ICONS: Record<string, string> = {
+  paint: "🚗",
   rims: "🛞",
-  windows: "🪟",
   calipers: "🛑",
-  trim: "⚡",
-  // Bike
-  tank: "⛽",
-  seat: "🪑",
-  frame: "⚙️",
-  exhaust: "💨",
-  wheels: "🛞",
-  // Sofa
-  fabric: "🛋️",
-  cushions: "🟫",
-  legs: "🪵",
-  woodTrim: "🪵",
-  // Sneaker
-  upperMesh: "👟",
-  sole: "⚪",
-  airPods: "⚡",
-  laces: "🧵",
-  accents: "✨",
-  // Headphones
-  earcups: "🎧",
-  headband: "〰️",
+  tint: "🪟",
 };
 
 const CAMERA_VIEWS: { id: CameraPreset; label: string }[] = [
@@ -57,7 +35,7 @@ export function MinimalFloatingDock() {
 
   const modelConfig = configurations[currentModel.id] || {};
   const currentPartState = modelConfig[activePartId] || {
-    color: "#00F0FF",
+    color: "#D40000",
     material: "gloss",
   };
   const totalPrice = calculateTotalPrice();
@@ -72,21 +50,21 @@ export function MinimalFloatingDock() {
     setPartColor(currentModel.id, activePartId, hex);
   };
 
-  const handleToggleMaterial = (mat: StudioMaterialType) => {
+  const handleToggleFinish = (mat: StudioMaterialType) => {
     if (soundEnabled) cyberAudio.playColorSwitch();
     setPartMaterial(currentModel.id, activePartId, mat);
   };
 
-  const isMetallic = currentPartState.material === "metallic";
+  const isMatte = currentPartState.material === "matte";
 
   return (
     <div className="pointer-events-auto w-full max-w-xl mx-auto px-4 pb-6 select-none">
       <div className="rounded-3xl p-3.5 sm:p-4 bg-zinc-950/80 border border-white/10 backdrop-blur-2xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] space-y-3">
-        {/* ROW 1: Part Selector Tabs (Large, Touch-Friendly Icon Pills) */}
+        {/* TAB 1 (Row 1): Part Selector Tabs */}
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
           {currentModel.parts.map((part) => {
             const isSelected = activePartId === part.id;
-            const emoji = PART_EMOJIS[part.id] || "✨";
+            const icon = PART_ICONS[part.id] || "✨";
             const partColor = modelConfig[part.id]?.color || part.defaultColor;
 
             return (
@@ -99,8 +77,8 @@ export function MinimalFloatingDock() {
                     : "bg-white/[0.04] text-zinc-400 border-white/5 hover:text-zinc-200 hover:bg-white/[0.08]"
                 }`}
               >
-                <span className="text-sm leading-none">{emoji}</span>
-                <span className="truncate max-w-[90px] sm:max-w-none">{part.name}</span>
+                <span className="text-sm leading-none">{icon}</span>
+                <span className="truncate">{part.name}</span>
                 <div
                   className="w-2.5 h-2.5 rounded-full border border-white/30 shrink-0 ml-0.5"
                   style={{ backgroundColor: partColor }}
@@ -110,9 +88,9 @@ export function MinimalFloatingDock() {
           })}
         </div>
 
-        {/* ROW 2: Color Palette Swatches & Material Finish Toggle */}
+        {/* TAB 2 (Row 2): 8 High-End Automotive Color Swatches + [ Gloss / Matte ] Toggle */}
         <div className="flex items-center justify-between gap-3 pt-1 border-t border-white/[0.07]">
-          {/* 8-10 High-Contrast Circular Color Swatches */}
+          {/* 8 Curated Luxury Automotive Swatches */}
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
             {CURATED_COLOR_SWATCHES.map((swatch) => {
               const isSelected =
@@ -137,37 +115,37 @@ export function MinimalFloatingDock() {
             })}
           </div>
 
-          {/* Minimalist Finish Toggle: [ Matte ] vs [ Metallic ] */}
+          {/* Minimalist Finish Toggle: [ Gloss / Matte ] */}
           <div className="flex items-center p-1 rounded-full bg-zinc-900 border border-white/10 shrink-0">
             <button
-              onClick={() => handleToggleMaterial("matte")}
+              onClick={() => handleToggleFinish("gloss")}
               className={`px-3 py-1 rounded-full text-[11px] font-medium transition-all ${
-                !isMetallic
+                !isMatte
+                  ? "bg-white text-zinc-950 font-semibold shadow-sm"
+                  : "text-zinc-400 hover:text-zinc-200"
+              }`}
+            >
+              Gloss
+            </button>
+            <button
+              onClick={() => handleToggleFinish("matte")}
+              className={`px-3 py-1 rounded-full text-[11px] font-medium transition-all ${
+                isMatte
                   ? "bg-white text-zinc-950 font-semibold shadow-sm"
                   : "text-zinc-400 hover:text-zinc-200"
               }`}
             >
               Matte
             </button>
-            <button
-              onClick={() => handleToggleMaterial("metallic")}
-              className={`px-3 py-1 rounded-full text-[11px] font-medium transition-all ${
-                isMetallic
-                  ? "bg-white text-zinc-950 font-semibold shadow-sm"
-                  : "text-zinc-400 hover:text-zinc-200"
-              }`}
-            >
-              Metallic
-            </button>
           </div>
         </div>
 
-        {/* ROW 3 (Footer micro-bar): Camera Views & Clean Price */}
+        {/* ROW 3: Camera Quick Views & Dynamic Valuation */}
         <div className="flex items-center justify-between pt-1 border-t border-white/[0.07] text-[11px]">
-          {/* Camera Pills */}
+          {/* Camera Angles */}
           <div className="flex items-center gap-1 text-zinc-400">
             <span className="text-[10px] uppercase font-mono tracking-wider text-zinc-500 mr-1 hidden sm:inline">
-              View:
+              Angles:
             </span>
             {CAMERA_VIEWS.map((cam) => {
               const isSelected = cameraPreset === cam.id;

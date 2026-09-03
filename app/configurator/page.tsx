@@ -8,11 +8,11 @@ import { MinimalSpecModal } from "@/components/configurator/MinimalSpecModal";
 import { GlbUploadModal } from "@/components/studio/GlbUploadModal";
 import { useStudioStore } from "@/store/useStudioStore";
 
-// Dynamically import Canvas with SSR disabled for safe WebGL initialization
-const StudioViewport = dynamic(
+// Dynamically import ConfiguratorCanvas with SSR disabled for safe WebGL initialization
+const ConfiguratorCanvas = dynamic(
   () =>
-    import("@/components/configurator/StudioViewport").then(
-      (mod) => mod.StudioViewport
+    import("@/components/configurator/ConfiguratorCanvas").then(
+      (mod) => mod.ConfiguratorCanvas
     ),
   { ssr: false }
 );
@@ -43,13 +43,13 @@ export default function ConfiguratorPage() {
   }, [setCapturedImage, buildSerial, currentModel.id]);
 
   return (
-    <main className="fixed inset-0 w-full h-screen overflow-hidden bg-gradient-to-b from-[#0F131C] via-[#090B10] to-[#050608]">
-      {/* Soft Ambient Radial Studio Glow Backdrop (No harsh neon lines) */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(56,189,248,0.06)_0%,transparent_65%)] pointer-events-none" />
+    <main className="fixed inset-0 w-full h-screen overflow-hidden bg-gradient-to-b from-[#161922] via-[#0D0F14] to-[#07090C]">
+      {/* Neutral Showroom Ambient Radial Studio Backdrop */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0.05)_0%,transparent_70%)] pointer-events-none" />
 
-      {/* Fullscreen 3D Studio Canvas Viewport */}
+      {/* Fullscreen 3D Automotive Showroom Viewport */}
       <div className="absolute inset-0 z-0">
-        <StudioViewport canvasRef={canvasRef} />
+        <ConfiguratorCanvas canvasRef={canvasRef} />
       </div>
 
       {/* Floating Ultra-Clean HUD Interface */}

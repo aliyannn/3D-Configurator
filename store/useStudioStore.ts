@@ -111,7 +111,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
   activeModelId: "car_gtx",
   customGlb: null,
   configurations: buildInitialConfigurations(),
-  activePartId: "body",
+  activePartId: "paint",
   hoveredPartId: null,
 
   environment: "studio_neutral",

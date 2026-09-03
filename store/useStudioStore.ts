@@ -1,11 +1,10 @@
 import { create } from "zustand";
 import {
-  ProductModel,
+  VehicleModel,
   MODELS_CATALOG,
   PartDefinition,
   StudioMaterialType,
   STUDIO_MATERIALS,
-  ProductCategory,
 } from "@/data/modelsCatalog";
 
 export type StudioEnvironment =
@@ -17,8 +16,9 @@ export type StudioEnvironment =
 export type CameraPreset =
   | "front_three_quarter"
   | "side_profile"
-  | "top_down"
-  | "detail_close";
+  | "engine_closeup"
+  | "detail_close"
+  | "top_down";
 
 export interface PartState {
   color: string;
@@ -76,14 +76,14 @@ interface StudioState {
   resetCurrentModel: () => void;
 
   // Helpers
-  getCurrentModel: () => ProductModel;
+  getCurrentModel: () => VehicleModel;
   getCurrentPartConfig: (partId?: string) => PartState;
   calculateTotalPrice: () => number;
   exportConfigJSON: () => string;
   importConfigJSON: (jsonStr: string) => boolean;
 }
 
-function makeSerialCode(prefix = "APX"): string {
+function makeSerialCode(prefix = "ALYN"): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let str = `${prefix}-`;
   for (let i = 0; i < 4; i++) str += chars[Math.floor(Math.random() * chars.length)];
@@ -108,10 +108,10 @@ function buildInitialConfigurations(): Record<string, Record<string, PartState>>
 }
 
 export const useStudioStore = create<StudioState>((set, get) => ({
-  activeModelId: "car_gtx",
+  activeModelId: "honda_cg125",
   customGlb: null,
   configurations: buildInitialConfigurations(),
-  activePartId: "paint",
+  activePartId: "fuelTank",
   hoveredPartId: null,
 
   environment: "studio_neutral",
@@ -124,13 +124,13 @@ export const useStudioStore = create<StudioState>((set, get) => ({
   specModalOpen: false,
   glbUploadModalOpen: false,
   capturedImage: null,
-  buildSerial: makeSerialCode("APX"),
+  buildSerial: makeSerialCode("CG125"),
 
   setActiveModelId: (id: string) => {
     const state = get();
     if (state.activeModelId === id) return;
 
-    let defaultPart = "body";
+    let defaultPart = "fuelTank";
     if (id === "custom" && state.customGlb?.detectedParts.length) {
       defaultPart = state.customGlb.detectedParts[0].id;
     } else {
@@ -145,13 +145,13 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       activePartId: defaultPart,
       cameraPreset: "front_three_quarter",
       cameraTriggerCount: state.cameraTriggerCount + 1,
-      buildSerial: makeSerialCode(id.toUpperCase().slice(0, 3)),
+      buildSerial: makeSerialCode(id.toUpperCase().slice(0, 5)),
     });
   },
 
   setCustomGlb: (data: CustomGlbData | null) => {
     if (!data) {
-      set({ customGlb: null, activeModelId: "car_gtx", activePartId: "body" });
+      set({ customGlb: null, activeModelId: "honda_cg125", activePartId: "fuelTank" });
       return;
     }
 
@@ -185,7 +185,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     set((state) => {
       const modelConfig = state.configurations[modelId] || {};
       const currentPartState = modelConfig[partId] || {
-        color: "#ffffff",
+        color: "#991B1B",
         material: "gloss",
       };
 
@@ -211,7 +211,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     set((state) => {
       const modelConfig = state.configurations[modelId] || {};
       const currentPartState = modelConfig[partId] || {
-        color: "#ffffff",
+        color: "#991B1B",
         material: "gloss",
       };
 
@@ -243,7 +243,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
   setSpecModalOpen: (open: boolean) => set({ specModalOpen: open }),
   setGlbUploadModalOpen: (open: boolean) => set({ glbUploadModalOpen: open }),
   setCapturedImage: (img: string | null) => set({ capturedImage: img }),
-  generateNewSerial: () => set({ buildSerial: makeSerialCode("APX") }),
+  generateNewSerial: () => set({ buildSerial: makeSerialCode("ALYN") }),
 
   resetCurrentModel: () => {
     const { activeModelId, customGlb } = get();
@@ -277,25 +277,26 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       });
       return {
         configurations: { ...state.configurations, [activeModelId]: restoredConfig },
-        buildSerial: makeSerialCode(activeModelId.slice(0, 3).toUpperCase()),
+        buildSerial: makeSerialCode(activeModelId.slice(0, 4).toUpperCase()),
       };
     });
   },
 
-  getCurrentModel: (): ProductModel => {
+  getCurrentModel: (): VehicleModel => {
     const { activeModelId, customGlb } = get();
     if (activeModelId === "custom" && customGlb) {
       return {
         id: "custom",
-        category: "custom" as ProductCategory,
+        brand: "Custom",
+        category: "custom",
         title: customGlb.name || "Custom Uploaded .GLB",
-        subtitle: "Dynamic User-Imported 3D Asset",
+        subtitle: "Dynamic Vehicle Mesh Asset",
         badge: "Custom Asset",
-        basePrice: 1500,
+        basePrice: 5000,
         cameraDefaults: {
           position: [3.5, 2.0, 3.5],
           target: [0, 0.4, 0],
-          fov: 42,
+          fov: 38,
         },
         parts: customGlb.detectedParts,
       };
@@ -312,23 +313,12 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     if (modelConfig && modelConfig[targetPartId]) {
       return modelConfig[targetPartId];
     }
-    return { color: "#00F0FF", material: "gloss" };
+    return { color: "#991B1B", material: "gloss" };
   },
 
   calculateTotalPrice: (): number => {
     const currentModel = get().getCurrentModel();
-    const modelConfig = get().configurations[currentModel.id] || {};
-    let total = currentModel.basePrice;
-
-    currentModel.parts.forEach((part) => {
-      const pConfig = modelConfig[part.id];
-      if (pConfig) {
-        const mat = STUDIO_MATERIALS[pConfig.material];
-        if (mat) total += mat.surcharge;
-      }
-    });
-
-    return total;
+    return currentModel.basePrice;
   },
 
   exportConfigJSON: (): string => {
@@ -336,6 +326,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     const modelConfig = get().configurations[currentModel.id] || {};
     const payload = {
       modelId: currentModel.id,
+      brand: currentModel.brand,
       modelTitle: currentModel.title,
       serialNumber: get().buildSerial,
       timestamp: new Date().toISOString(),
@@ -352,7 +343,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
 
       set((state) => ({
         activeModelId: data.modelId,
-        activePartId: Object.keys(data.parts)[0] || "body",
+        activePartId: Object.keys(data.parts)[0] || "fuelTank",
         configurations: {
           ...state.configurations,
           [data.modelId]: data.parts,

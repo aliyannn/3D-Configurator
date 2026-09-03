@@ -2,26 +2,29 @@
 
 import React, { useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
-import { UIOverlay } from "@/components/configurator/UIOverlay";
-import { SpecSheetModal } from "@/components/configurator/SpecSheetModal";
-import { useConfiguratorStore } from "@/store/useConfiguratorStore";
+import { MinimalTopBar } from "@/components/configurator/MinimalTopBar";
+import { MinimalFloatingDock } from "@/components/configurator/MinimalFloatingDock";
+import { MinimalSpecModal } from "@/components/configurator/MinimalSpecModal";
+import { GlbUploadModal } from "@/components/studio/GlbUploadModal";
+import { useStudioStore } from "@/store/useStudioStore";
 
-// Dynamically import Canvas with SSR disabled for WebGL safety
-const ConfiguratorCanvas = dynamic(
+// Dynamically import Canvas with SSR disabled for safe WebGL initialization
+const StudioViewport = dynamic(
   () =>
-    import("@/components/configurator/ConfiguratorCanvas").then(
-      (mod) => mod.ConfiguratorCanvas
+    import("@/components/configurator/StudioViewport").then(
+      (mod) => mod.StudioViewport
     ),
   { ssr: false }
 );
 
 export default function ConfiguratorPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const setCapturedImage = useConfiguratorStore((state) => state.setCapturedImage);
-  const configSerialNumber = useConfiguratorStore((state) => state.configSerialNumber);
+  const setCapturedImage = useStudioStore((state) => state.setCapturedImage);
+  const buildSerial = useStudioStore((state) => state.buildSerial);
+  const currentModel = useStudioStore((state) => state.getCurrentModel());
 
-  const handleCaptureScreenshot = useCallback(() => {
-    // Locate the WebGL Canvas in DOM
+  // Instant Snapshot Capture
+  const handleCaptureSnapshot = useCallback(() => {
     const canvas = document.querySelector("canvas");
     if (!canvas) return;
 
@@ -29,32 +32,40 @@ export default function ConfiguratorPage() {
       const dataUrl = canvas.toDataURL("image/png");
       setCapturedImage(dataUrl);
 
-      // Create download trigger
+      // Create download link
       const link = document.createElement("a");
-      link.download = `CyberSneaker_${configSerialNumber}_Render.png`;
+      link.download = `${currentModel.id}_${buildSerial}_Render.png`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
-      console.error("Screenshot capture failed:", err);
+      console.error("Snapshot capture failed:", err);
     }
-  }, [setCapturedImage, configSerialNumber]);
+  }, [setCapturedImage, buildSerial, currentModel.id]);
 
   return (
-    <main className="relative w-screen h-screen overflow-hidden bg-[#030407] scanlines">
-      {/* Background Cyber Grid Lines */}
-      <div className="absolute inset-0 cyber-grid-bg opacity-40 pointer-events-none" />
-      <div className="absolute inset-0 bg-cyber-glow pointer-events-none opacity-60" />
+    <main className="fixed inset-0 w-full h-screen overflow-hidden bg-gradient-to-b from-[#0F131C] via-[#090B10] to-[#050608]">
+      {/* Soft Ambient Radial Studio Glow Backdrop (No harsh neon lines) */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(56,189,248,0.06)_0%,transparent_65%)] pointer-events-none" />
 
-      {/* 3D WebGL Canvas Layer */}
+      {/* Fullscreen 3D Studio Canvas Viewport */}
       <div className="absolute inset-0 z-0">
-        <ConfiguratorCanvas canvasRef={canvasRef} />
+        <StudioViewport canvasRef={canvasRef} />
       </div>
 
-      {/* Interactive UI HUD Layer */}
-      <UIOverlay onCaptureScreenshot={handleCaptureScreenshot} />
+      {/* Floating Ultra-Clean HUD Interface */}
+      <div className="absolute inset-0 pointer-events-none flex flex-col justify-between z-10">
+        {/* Top Minimal Pill Bar */}
+        <MinimalTopBar onCaptureSnapshot={handleCaptureSnapshot} />
 
-      {/* Holographic Spec Sheet & Checkout Modal */}
-      <SpecSheetModal />
+        {/* Centered Minimal Floating Customizer Dock */}
+        <MinimalFloatingDock />
+      </div>
+
+      {/* Apple-Grade Spec Sheet Modal */}
+      <MinimalSpecModal />
+
+      {/* Custom 3D Model Upload Modal */}
+      <GlbUploadModal />
     </main>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import StudioPage from "./studio/page";
+import ConfiguratorPage from "./configurator/page";
 
 export default function HomePage() {
-  return <StudioPage />;
+  return <ConfiguratorPage />;
 }

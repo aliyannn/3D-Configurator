@@ -14,9 +14,13 @@ export type StudioEnvironment =
   | "deep_obsidian";
 
 export type CameraPreset =
+  | "left_profile"
+  | "right_profile"
   | "front_three_quarter"
-  | "side_profile"
+  | "rear_three_quarter"
   | "engine_closeup"
+  | "tank_closeup"
+  | "side_profile"
   | "detail_close"
   | "top_down";
 
@@ -46,6 +50,7 @@ interface StudioState {
   autoRotate: boolean;
   wireframe: boolean;
   soundEnabled: boolean;
+  headlightStyle: "rectangular" | "round";
 
   // Modals & Snapshot
   specModalOpen: boolean;
@@ -69,6 +74,7 @@ interface StudioState {
   toggleAutoRotate: () => void;
   toggleWireframe: () => void;
   toggleSound: () => void;
+  toggleHeadlightStyle: () => void;
   setSpecModalOpen: (open: boolean) => void;
   setGlbUploadModalOpen: (open: boolean) => void;
   setCapturedImage: (img: string | null) => void;
@@ -83,7 +89,7 @@ interface StudioState {
   importConfigJSON: (jsonStr: string) => boolean;
 }
 
-function makeSerialCode(prefix = "ALYN"): string {
+function makeSerialCode(prefix = "CG125"): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let str = `${prefix}-`;
   for (let i = 0; i < 4; i++) str += chars[Math.floor(Math.random() * chars.length)];
@@ -120,6 +126,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
   autoRotate: false,
   wireframe: false,
   soundEnabled: true,
+  headlightStyle: "rectangular", // Authentic OEM Honda CG 125 rectangular headlamp
 
   specModalOpen: false,
   glbUploadModalOpen: false,
@@ -185,7 +192,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     set((state) => {
       const modelConfig = state.configurations[modelId] || {};
       const currentPartState = modelConfig[partId] || {
-        color: "#991B1B",
+        color: "#0F172A",
         material: "gloss",
       };
 
@@ -211,7 +218,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     set((state) => {
       const modelConfig = state.configurations[modelId] || {};
       const currentPartState = modelConfig[partId] || {
-        color: "#991B1B",
+        color: "#0F172A",
         material: "gloss",
       };
 
@@ -240,6 +247,12 @@ export const useStudioStore = create<StudioState>((set, get) => ({
   toggleAutoRotate: () => set((state) => ({ autoRotate: !state.autoRotate })),
   toggleWireframe: () => set((state) => ({ wireframe: !state.wireframe })),
   toggleSound: () => set((state) => ({ soundEnabled: !state.soundEnabled })),
+  toggleHeadlightStyle: () =>
+    set((state) => ({
+      headlightStyle:
+        state.headlightStyle === "rectangular" ? "round" : "rectangular",
+    })),
+
   setSpecModalOpen: (open: boolean) => set({ specModalOpen: open }),
   setGlbUploadModalOpen: (open: boolean) => set({ glbUploadModalOpen: open }),
   setCapturedImage: (img: string | null) => set({ capturedImage: img }),
@@ -313,7 +326,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     if (modelConfig && modelConfig[targetPartId]) {
       return modelConfig[targetPartId];
     }
-    return { color: "#991B1B", material: "gloss" };
+    return { color: "#0F172A", material: "gloss" };
   },
 
   calculateTotalPrice: (): number => {

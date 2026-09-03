@@ -1,5 +1,13 @@
 export type VehicleBrand = "Honda" | "Toyota" | "Custom";
-export type ProductCategory = "motorcycles" | "cars" | "custom" | "vehicles" | "bikes" | "furniture" | "footwear" | "tech";
+export type ProductCategory =
+  | "motorcycles"
+  | "cars"
+  | "custom"
+  | "vehicles"
+  | "bikes"
+  | "furniture"
+  | "footwear"
+  | "tech";
 
 export type StudioMaterialType =
   | "gloss"
@@ -19,7 +27,7 @@ export interface StudioMaterialProperties {
 export const STUDIO_MATERIALS: Record<StudioMaterialType, StudioMaterialProperties> = {
   gloss: {
     type: "gloss",
-    name: "High Gloss Clearcoat",
+    name: "Factory Gloss Clearcoat",
     roughness: 0.12,
     metalness: 0.82,
     clearcoat: 1.0,
@@ -28,7 +36,7 @@ export const STUDIO_MATERIALS: Record<StudioMaterialType, StudioMaterialProperti
   },
   matte: {
     type: "matte",
-    name: "Matte Powdercoat",
+    name: "Heat-Resistant Matte Powdercoat",
     roughness: 0.72,
     metalness: 0.25,
     clearcoat: 0.0,
@@ -36,11 +44,11 @@ export const STUDIO_MATERIALS: Record<StudioMaterialType, StudioMaterialProperti
   },
   chrome: {
     type: "chrome",
-    name: "Chrome / Polished Metallic",
-    roughness: 0.08,
+    name: "Mirror Chrome Polished",
+    roughness: 0.06,
     metalness: 0.98,
     clearcoat: 0.6,
-    clearcoatRoughness: 0.05,
+    clearcoatRoughness: 0.04,
     surcharge: 450,
   },
 };
@@ -53,6 +61,7 @@ export interface PartDefinition {
   defaultColor: string;
   defaultMaterial: StudioMaterialType;
   swatches?: { name: string; hex: string }[];
+  styleOptions?: { id: string; label: string }[];
 }
 
 export interface VehicleModel {
@@ -71,16 +80,16 @@ export interface VehicleModel {
   parts: PartDefinition[];
 }
 
-// 8 Universal Automotive Studio Color Swatches
+// Curated Honda CG 125 Authentic Colors
 export const CURATED_COLOR_SWATCHES = [
-  { name: "Imperial Red", hex: "#991B1B" },
-  { name: "Midnight Obsidian", hex: "#0F172A" },
-  { name: "British Racing Green", hex: "#064E3B" },
-  { name: "Raw Brushed Silver", hex: "#94A3B8" },
-  { name: "Pure Showroom White", hex: "#F8FAFC" },
-  { name: "Vintage Tan Leather", hex: "#78350F" },
-  { name: "Sunset Amber Gold", hex: "#D97706" },
-  { name: "Horizon Electric Blue", hex: "#0284C7" },
+  { name: "Classic Gloss Black (OEM)", hex: "#0F172A" },
+  { name: "Imperial Red (OEM)", hex: "#991B1B" },
+  { name: "Raw Brushed Metal", hex: "#94A3B8" },
+  { name: "Saddle Tan Leather", hex: "#78350F" },
+  { name: "Factory Chrome / Silver", hex: "#E2E8F0" },
+  { name: "Matte Heat Black", hex: "#18181B" },
+  { name: "Amber Gold Glow", hex: "#D97706" },
+  { name: "Vintage Navy Blue", hex: "#1E3A8A" },
 ];
 
 export const MODELS_CATALOG: VehicleModel[] = [
@@ -88,107 +97,98 @@ export const MODELS_CATALOG: VehicleModel[] = [
     id: "honda_cg125",
     brand: "Honda",
     category: "motorcycles",
-    title: "Honda CG 125 / Modern Cafe Racer",
-    subtitle: "Custom Neo-Retro Tuning & Scrambler Spec",
-    badge: "125cc Custom",
-    basePrice: 2200,
+    title: "Honda CG 125 (OEM & Custom Spec)",
+    subtitle: "Authentic 125cc OHV 4-Stroke Commuter & Cafe Racer",
+    badge: "125cc OHV",
+    basePrice: 1850,
     cameraDefaults: {
-      position: [2.8, 1.4, 3.0],
-      target: [0, 0.4, 0],
+      position: [2.5, 1.25, 2.6],
+      target: [0, 0.45, 0],
       fov: 38,
     },
     parts: [
       {
         id: "fuelTank",
-        name: "Fuel Tank",
+        name: "Fuel Tank & Decals",
         icon: "⛽",
-        description: "Teardrop cafe tank with knee indents and vintage pinstripes.",
-        defaultColor: "#991B1B",
+        description: "Classic CG 125 teardrop tank with top ridge, Honda wing emblem & striped side covers.",
+        defaultColor: "#0F172A", // Classic Black OEM
         defaultMaterial: "gloss",
         swatches: [
-          { name: "Imperial Red", hex: "#991B1B" },
-          { name: "Midnight Black", hex: "#0F172A" },
-          { name: "Racing Green", hex: "#064E3B" },
-          { name: "Brushed Steel", hex: "#94A3B8" },
+          { name: "Classic Gloss Black (OEM)", hex: "#0F172A" },
+          { name: "Imperial Red (OEM)", hex: "#991B1B" },
+          { name: "Raw Brushed Metal", hex: "#94A3B8" },
+          { name: "Vintage Navy Blue", hex: "#1E3A8A" },
           { name: "Sunset Gold", hex: "#D97706" },
         ],
       },
       {
-        id: "seat",
-        name: "Seat Leather",
-        icon: "💺",
-        description: "Handcrafted tuck & roll ribbed waterproof leather saddle.",
-        defaultColor: "#78350F",
-        defaultMaterial: "matte",
-        swatches: [
-          { name: "Saddle Tan", hex: "#78350F" },
-          { name: "Matte Black", hex: "#18181B" },
-          { name: "Oxblood Red", hex: "#450A0A" },
-          { name: "Vintage Cream", hex: "#FEF3C7" },
-        ],
-      },
-      {
         id: "engine",
-        name: "Engine Block",
+        name: "OHV 125cc Engine",
         icon: "⚙️",
-        description: "Single-cylinder 4-stroke OHV engine with cylinder cooling fins.",
-        defaultColor: "#E2E8F0",
+        description: "Single-cylinder 4-stroke OHV engine with cylinder cooling fins, HONDA crankcase & kickstarter.",
+        defaultColor: "#E2E8F0", // Factory Silver OEM
         defaultMaterial: "chrome",
         swatches: [
-          { name: "Chrome Polished", hex: "#E2E8F0" },
-          { name: "Powdercoat Black", hex: "#18181B" },
-          { name: "Gunmetal Grey", hex: "#475569" },
+          { name: "Factory Silver (OEM)", hex: "#E2E8F0" },
+          { name: "Matte Heat Black Powdercoat", hex: "#18181B" },
+          { name: "Gunmetal Casing", hex: "#475569" },
         ],
       },
       {
         id: "exhaust",
-        name: "Exhaust & Muffler",
+        name: "Silencer & Exhaust",
         icon: "💨",
-        description: "Swept-up reverse-cone megaphone exhaust pipe.",
-        defaultColor: "#F1F5F9",
+        description: "Continuous header pipe with authentic long cylindrical silencer & chrome heat shield.",
+        defaultColor: "#F8FAFC", // Mirror Chrome
         defaultMaterial: "chrome",
         swatches: [
-          { name: "Classic Chrome", hex: "#F1F5F9" },
-          { name: "Matte Heat Black", hex: "#18181B" },
+          { name: "Classic Long Chrome (OEM)", hex: "#F8FAFC" },
+          { name: "Matte Black Scrambler", hex: "#18181B" },
           { name: "Titanium Heat Blue", hex: "#38BDF8" },
         ],
       },
       {
-        id: "wheels",
-        name: "Spoke Wheels",
-        icon: "🛞",
-        description: "Heavy-duty wire-spoked alloy rims with cafe road tires.",
-        defaultColor: "#0F172A",
+        id: "seat",
+        name: "Ribbed Dual Seat",
+        icon: "💺",
+        description: "Long dual-passenger seat with horizontal heat-pressed ribbed seams & rear HONDA stencil.",
+        defaultColor: "#18181B", // Black Ribbed OEM
         defaultMaterial: "matte",
         swatches: [
-          { name: "Satin Black", hex: "#0F172A" },
-          { name: "Chrome Wire", hex: "#E2E8F0" },
-          { name: "Vintage Gold", hex: "#D97706" },
+          { name: "OEM Ribbed Black", hex: "#18181B" },
+          { name: "Tuck & Roll Tan Leather", hex: "#78350F" },
+          { name: "Oxblood Burgundy", hex: "#450A0A" },
+        ],
+      },
+      {
+        id: "wheels",
+        name: "Wire Spoke Wheels",
+        icon: "🛞",
+        description: "18-inch chrome wire spoke rims with center aluminum drum brake hubs & deep-tread tires.",
+        defaultColor: "#E2E8F0", // Chrome Spokes
+        defaultMaterial: "chrome",
+        swatches: [
+          { name: "Chrome Wire Spoke (OEM)", hex: "#E2E8F0" },
+          { name: "Satin Black Rims", hex: "#0F172A" },
+          { name: "Vintage Gold Spoke", hex: "#D97706" },
         ],
       },
       {
         id: "headlight",
-        name: "Headlight & Visor",
+        name: "Headlamp & Cluster",
         icon: "💡",
-        description: "Classic 7-inch round headlight with protective grill and tinted lens.",
-        defaultColor: "#FACC15",
+        description: "OEM rectangular headlamp with amber turn signals and dual speedometer/tachometer gauges.",
+        defaultColor: "#F8FAFC", // Clear Fluted Glass
         defaultMaterial: "gloss",
         swatches: [
-          { name: "Vintage Yellow", hex: "#FACC15" },
-          { name: "Modern Clear", hex: "#F8FAFC" },
-          { name: "Amber Glow", hex: "#F97316" },
+          { name: "OEM Clear Fluted (Rectangular)", hex: "#F8FAFC" },
+          { name: "Vintage Yellow Amber (Round Cafe)", hex: "#FACC15" },
+          { name: "Modern Smoked Lens", hex: "#475569" },
         ],
-      },
-      {
-        id: "handlebars",
-        name: "Handlebars",
-        icon: "🏍️",
-        description: "Low-rise clip-on cafe racer bars with retro rubber grips.",
-        defaultColor: "#18181B",
-        defaultMaterial: "matte",
-        swatches: [
-          { name: "Tracker Black", hex: "#18181B" },
-          { name: "Chrome Polished", hex: "#E2E8F0" },
+        styleOptions: [
+          { id: "rectangular", label: "OEM Rectangular" },
+          { id: "round", label: "Round Cafe Racer" },
         ],
       },
     ],
@@ -272,85 +272,6 @@ export const MODELS_CATALOG: VehicleModel[] = [
         swatches: [
           { name: "Exposed Carbon", hex: "#18181B" },
           { name: "Body Matched", hex: "#DC2626" },
-        ],
-      },
-    ],
-  },
-  {
-    id: "toyota_corolla_gr",
-    brand: "Toyota",
-    category: "cars",
-    title: "Toyota GR Corolla Rally Edition",
-    subtitle: "GR-FOUR All-Wheel-Drive Hot Hatch",
-    badge: "GR-FOUR AWD",
-    basePrice: 38500,
-    cameraDefaults: {
-      position: [4.2, 1.8, 4.4],
-      target: [0, 0.4, 0],
-      fov: 38,
-    },
-    parts: [
-      {
-        id: "body",
-        name: "Body Paint",
-        icon: "🚗",
-        description: "Widebody flared rally exterior paint finish.",
-        defaultColor: "#F8FAFC",
-        defaultMaterial: "gloss",
-        swatches: [
-          { name: "Ice Cap White", hex: "#F8FAFC" },
-          { name: "Supersonic Red", hex: "#DC2626" },
-          { name: "Black Metal", hex: "#09090B" },
-          { name: "Heavy Metal Grey", hex: "#475569" },
-        ],
-      },
-      {
-        id: "rims",
-        name: "Enkei Rally Wheels",
-        icon: "🛞",
-        description: "18-inch gloss black 15-spoke cast alloy wheels.",
-        defaultColor: "#09090B",
-        defaultMaterial: "gloss",
-        swatches: [
-          { name: "Gloss Black", hex: "#09090B" },
-          { name: "Rally White", hex: "#F8FAFC" },
-          { name: "Tarmac Bronze", hex: "#78350F" },
-        ],
-      },
-      {
-        id: "calipers",
-        name: "GR Calipers",
-        icon: "🛑",
-        description: "Red-painted 4-piston ventilated disc brake calipers.",
-        defaultColor: "#DC2626",
-        defaultMaterial: "gloss",
-        swatches: [
-          { name: "GR Red", hex: "#DC2626" },
-          { name: "Stealth Grey", hex: "#475569" },
-        ],
-      },
-      {
-        id: "tint",
-        name: "Privacy Glass",
-        icon: "🪟",
-        description: "Factory privacy glass on rear doors and liftgate.",
-        defaultColor: "#334155",
-        defaultMaterial: "gloss",
-        swatches: [
-          { name: "Deep Smoke", hex: "#334155" },
-          { name: "Clear Glass", hex: "#94A3B8" },
-        ],
-      },
-      {
-        id: "aero",
-        name: "Rally Roof & Wing",
-        icon: "⚡",
-        description: "Forged carbon fiber composite roof and high-downforce spoiler.",
-        defaultColor: "#18181B",
-        defaultMaterial: "matte",
-        swatches: [
-          { name: "Forged Carbon", hex: "#18181B" },
-          { name: "Body Matched", hex: "#F8FAFC" },
         ],
       },
     ],

@@ -15,7 +15,7 @@ import { useStudioStore, CameraPreset } from "@/store/useStudioStore";
 import { ModelViewer } from "./ModelViewer";
 import { Loader2 } from "lucide-react";
 
-// Camera Controller with Real-World Vehicle Presets (including Engine Close-Up)
+// Camera Controller with Real-World Honda CG 125 Angles
 function CameraRig() {
   const { camera } = useThree();
   const controlsRef = useRef<OrbitControlsImpl>(null);
@@ -31,46 +31,62 @@ function CameraRig() {
 
     if (currentModel.id === "honda_cg125") {
       switch (cameraPreset) {
-        case "front_three_quarter":
-          targetPos = [2.6, 1.4, 2.7];
+        case "left_profile":
+          // Authentic Left Side View (Photo #1 in reference sheet)
+          targetPos = [0.01, 0.65, -3.1];
           targetLookAt = [0, 0.45, 0];
           break;
-        case "side_profile":
-          targetPos = [0.01, 0.85, 3.4];
+        case "right_profile":
+          // Authentic Right Side View (Photo #2 in reference sheet)
+          targetPos = [0.01, 0.65, 3.1];
+          targetLookAt = [0, 0.45, 0];
+          break;
+        case "front_three_quarter":
+          // Right Front 3/4 View (Photo #5 in reference sheet)
+          targetPos = [2.4, 1.25, 2.5];
+          targetLookAt = [0, 0.45, 0];
+          break;
+        case "rear_three_quarter":
+          // Right Rear 3/4 View (Photo #8 in reference sheet)
+          targetPos = [-2.4, 1.25, 2.4];
           targetLookAt = [0, 0.45, 0];
           break;
         case "engine_closeup":
-          targetPos = [0.95, 0.65, 1.35];
-          targetLookAt = [0.1, 0.45, 0]; // Focused on engine & cylinder head
+          // Authentic Engine & Cylinder Fin Zoom (Photo #23 in reference sheet)
+          targetPos = [0.55, 0.52, 1.15];
+          targetLookAt = [0.06, 0.45, 0];
           break;
-        case "top_down":
-          targetPos = [0.01, 3.8, 0.01];
-          targetLookAt = [0, 0.4, 0];
+        case "tank_closeup":
+          // Authentic Fuel Tank & Decals Zoom (Photo #19 in reference sheet)
+          targetPos = [0.65, 1.05, 1.05];
+          targetLookAt = [0.16, 0.78, 0];
           break;
         default:
-          targetPos = [2.6, 1.4, 2.7];
+          targetPos = [2.4, 1.25, 2.5];
+          targetLookAt = [0, 0.45, 0];
       }
     } else {
-      // Cars (Toyota Supra / Corolla GR)
+      // Cars (Toyota Supra)
       switch (cameraPreset) {
+        case "left_profile":
+          targetPos = [0.01, 0.9, -4.6];
+          targetLookAt = [0, 0.35, 0];
+          break;
+        case "right_profile":
+          targetPos = [0.01, 0.9, 4.6];
+          targetLookAt = [0, 0.35, 0];
+          break;
         case "front_three_quarter":
-          targetPos = [3.8, 1.6, 3.9];
+          targetPos = [3.8, 1.6, 3.8];
           targetLookAt = [0, 0.35, 0];
           break;
-        case "side_profile":
-          targetPos = [0.01, 0.9, 4.8];
-          targetLookAt = [0, 0.35, 0];
-          break;
-        case "engine_closeup":
-          targetPos = [1.8, 1.2, 1.6];
-          targetLookAt = [0.8, 0.4, 0]; // Focused on front wheel & caliper
-          break;
-        case "top_down":
-          targetPos = [0.01, 5.2, 0.01];
+        case "rear_three_quarter":
+          targetPos = [-3.8, 1.6, 3.8];
           targetLookAt = [0, 0.35, 0];
           break;
         default:
-          targetPos = [3.8, 1.6, 3.9];
+          targetPos = [3.8, 1.6, 3.8];
+          targetLookAt = [0, 0.35, 0];
       }
     }
 
@@ -108,8 +124,8 @@ function CameraRig() {
       ref={controlsRef}
       enableDamping
       dampingFactor={0.06}
-      minDistance={1.2}
-      maxDistance={9.0}
+      minDistance={1.1}
+      maxDistance={8.5}
       minPolarAngle={0.1}
       maxPolarAngle={Math.PI / 2 - 0.02} // Ground-locked
       autoRotate={autoRotate}
@@ -124,42 +140,40 @@ function CameraRig() {
   );
 }
 
-// White Showroom Lighting Rig
-function WhiteShowroomLighting() {
+// High-End Pure White Studio Lighting Rig
+function WhiteStudioLighting() {
   return (
     <>
-      <ambientLight intensity={0.7} />
-      {/* Warm Main Overhead Key Light */}
-      <spotLight
-        position={[5, 9, 6]}
-        intensity={2.8}
-        angle={0.65}
-        penumbra={0.7}
-        color="#FFFBF5"
+      <ambientLight intensity={0.85} />
+      {/* Overhead Softbox Key Light */}
+      <directionalLight
+        position={[4, 8, 5]}
+        intensity={2.6}
+        color="#FFFFFF"
         castShadow
         shadow-mapSize={[1024, 1024]}
         shadow-bias={-0.0001}
       />
-      {/* Soft Cool Fill Light for chrome reflections */}
-      <directionalLight position={[-6, 6, -4]} intensity={1.2} color="#EDF2F7" />
-      {/* High-Key Rim Light */}
-      <pointLight position={[0, 4, -6]} intensity={1.5} color="#FFFFFF" distance={16} />
-      {/* High-End Showroom HDRI Reflections */}
+      {/* Soft Fill Light to eliminate harsh shadows on left engine side */}
+      <directionalLight position={[-5, 5, -4]} intensity={1.4} color="#F1F5F9" />
+      {/* Rim Light for chrome edge highlights */}
+      <pointLight position={[0, 3.5, -5]} intensity={1.6} color="#FFFFFF" distance={15} />
+      {/* Authentic Studio HDRI Environment for chrome silencer reflections */}
       <Environment preset="studio" />
     </>
   );
 }
 
-// Minimal Clean Showroom Loader
-function ShowroomLoader() {
+// Elegant Studio Loader
+function StudioLoader() {
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#F8FAFC]/90 backdrop-blur-md z-20 select-none">
+    <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/90 backdrop-blur-md z-20 select-none">
       <div className="relative flex items-center justify-center mb-3">
-        <div className="w-12 h-12 rounded-full border-2 border-slate-300 border-t-slate-900 animate-spin" />
-        <Loader2 className="w-5 h-5 text-slate-800 animate-pulse" />
+        <div className="w-12 h-12 rounded-full border-2 border-slate-300 border-t-red-600 animate-spin" />
+        <Loader2 className="w-5 h-5 text-red-600 animate-pulse" />
       </div>
-      <p className="text-xs font-semibold text-slate-700 font-mono tracking-wider uppercase">
-        Loading Showroom Model...
+      <p className="text-xs font-bold text-slate-800 font-mono tracking-wider uppercase">
+        Loading Honda CG 125 Model...
       </p>
     </div>
   );
@@ -182,20 +196,20 @@ export function ConfiguratorCanvas({ canvasRef }: ConfiguratorCanvasProps) {
   }, []);
 
   return (
-    <div className="relative w-full h-full select-none overflow-hidden bg-gradient-to-b from-[#F8FAFC] via-[#F1F5F9] to-[#E2E8F0]">
-      {/* Subtle Studio Lighting Radial Vignette */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0.9)_0%,rgba(226,232,240,0.6)_80%)] pointer-events-none" />
+    <div className="relative w-full h-full select-none overflow-hidden bg-white">
+      {/* Clean White Studio Photography Radial Backdrop */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,#FFFFFF_0%,#F8FAFC_65%,#EEF2F6_100%)] pointer-events-none" />
 
-      <Suspense fallback={<ShowroomLoader />}>
+      <Suspense fallback={<StudioLoader />}>
         <Canvas
           ref={canvasRef}
-          camera={{ position: [2.8, 1.4, 3.0], fov: 38 }}
+          camera={{ position: [2.4, 1.25, 2.5], fov: 38 }}
           dpr={[1, 1.5]}
           gl={{
             preserveDrawingBuffer: true,
             antialias: true,
             toneMapping: THREE.ACESFilmicToneMapping,
-            toneMappingExposure: 1.12,
+            toneMappingExposure: 1.15,
             powerPreference: "high-performance",
           }}
           shadows
@@ -203,23 +217,23 @@ export function ConfiguratorCanvas({ canvasRef }: ConfiguratorCanvasProps) {
         >
           <AdaptiveDpr pixelated />
           <AdaptiveEvents />
-          <WhiteShowroomLighting />
+          <WhiteStudioLighting />
 
-          {/* Soft Ground Contact Shadows on Slate White Floor */}
+          {/* Realistic Soft Ground Shadow Beneath Wheels & Center Stand */}
           <ContactShadows
             position={[0, -0.01, 0]}
             opacity={0.65}
-            scale={20}
+            scale={16}
             blur={1.8}
-            far={4.5}
+            far={4.0}
             resolution={1024}
             color="#1E293B"
           />
 
-          {/* Real-World Vehicle 3D Model */}
+          {/* Authentic Honda CG 125 3D Model */}
           <ModelViewer />
 
-          {/* Smooth Camera Rig */}
+          {/* Camera Rig with Multi-Angle View Presets */}
           <CameraRig />
         </Canvas>
       </Suspense>

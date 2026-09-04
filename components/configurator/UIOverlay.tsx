@@ -126,13 +126,30 @@ export function UIOverlay({ onCaptureSnapshot }: UIOverlayProps) {
             <select
               value={currentModel.id}
               onChange={(e) => handleModelChange(e.target.value)}
-              className="bg-transparent text-xs font-bold text-slate-900 outline-none cursor-pointer max-w-[200px] truncate"
+              className="bg-transparent text-xs font-bold text-slate-900 outline-none cursor-pointer max-w-[220px] truncate"
             >
-              {brandModels.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.title}
-                </option>
-              ))}
+              {brandModels.some((m) => m.category === "motorcycles") && (
+                <optgroup label="🏍️ Motorcycles">
+                  {brandModels
+                    .filter((m) => m.category === "motorcycles")
+                    .map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.title}
+                      </option>
+                    ))}
+                </optgroup>
+              )}
+              {brandModels.some((m) => m.category === "cars") && (
+                <optgroup label="🚗 Sports Cars">
+                  {brandModels
+                    .filter((m) => m.category === "cars")
+                    .map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.title}
+                      </option>
+                    ))}
+                </optgroup>
+              )}
             </select>
           </div>
 

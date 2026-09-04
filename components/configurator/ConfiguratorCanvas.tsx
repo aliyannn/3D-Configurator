@@ -32,7 +32,7 @@ function CameraRig() {
     let targetPos: [number, number, number];
     let targetLookAt: [number, number, number] = [0, 0.45, 0];
 
-    if (currentModel.id === "honda_cg125") {
+    if (currentModel.category === "motorcycles") {
       switch (cameraPreset) {
         case "left_profile":
           // Authentic Left Side View (Photo #1 in reference sheet)

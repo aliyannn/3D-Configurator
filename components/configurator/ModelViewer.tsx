@@ -28,24 +28,24 @@ class ModelErrorBoundary extends React.Component<
 export function ModelViewer() {
   const activeModelId = useStudioStore((state) => state.activeModelId);
   const customGlb = useStudioStore((state) => state.customGlb);
+  const currentModel = useStudioStore((state) => state.getCurrentModel());
   const configurations = useStudioStore((state) => state.configurations);
   const activePartId = useStudioStore((state) => state.activePartId);
   const setActivePartId = useStudioStore((state) => state.setActivePartId);
-  const updateDetectedMeshes = useStudioStore((state) => state.updateDetectedMeshes);
 
-  // Extract color and finish dictionaries for custom model
+  // Extract color and finish dictionaries for the active model
   const { partColors, partFinishes } = useMemo(() => {
     const colors: Record<string, string> = {};
     const finishes: Record<string, StudioMaterialType> = {};
-    const customConfig = configurations.custom || {};
+    const modelConfig = configurations[activeModelId] || {};
 
-    Object.entries(customConfig).forEach(([meshName, state]) => {
-      colors[meshName] = state.color;
-      finishes[meshName] = state.material;
+    Object.entries(modelConfig).forEach(([partId, state]) => {
+      colors[partId] = state.color;
+      finishes[partId] = state.material;
     });
 
     return { partColors: colors, partFinishes: finishes };
-  }, [configurations.custom]);
+  }, [configurations, activeModelId]);
 
   // 1. Custom Uploaded .GLB / .GLTF (Safely Isolated in Error Boundary)
   if (activeModelId === "custom" && customGlb?.url) {
@@ -53,6 +53,7 @@ export function ModelViewer() {
       <ModelErrorBoundary fallback={<HondaCG125Model />}>
         <React.Suspense fallback={null}>
           <DynamicModelViewer
+            key={customGlb.url}
             url={customGlb.url}
             selectedPart={activePartId}
             partColors={partColors}
@@ -64,13 +65,30 @@ export function ModelViewer() {
     );
   }
 
-  // 2. Authentic Honda CG 125 Model
-  if (activeModelId === "honda_cg125") {
-    return <HondaCG125Model />;
+  // 2. Catalog Models with static GLB asset (Honda CG 125, CBR 650R, S2000, etc.)
+  if (currentModel?.modelUrl) {
+    return (
+      <ModelErrorBoundary fallback={<HondaCG125Model />}>
+        <React.Suspense fallback={null}>
+          <DynamicModelViewer
+            key={currentModel.id}
+            url={currentModel.modelUrl}
+            selectedPart={activePartId}
+            partColors={partColors}
+            partFinishes={partFinishes}
+            onMeshClick={setActivePartId}
+          />
+        </React.Suspense>
+      </ModelErrorBoundary>
+    );
   }
 
-  // 3. Toyota GR Series
+  // 3. Procedural Fallback Models
+  if (currentModel?.category === "motorcycles") {
+    return <HondaCG125Model />;
+  }
   return <ProceduralCar />;
 }
 
 export default ModelViewer;
+

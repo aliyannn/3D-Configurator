@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useEffect, useRef } from "react";
+import React, { Suspense, useEffect, useRef, useCallback } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import {
   OrbitControls,
@@ -13,6 +13,9 @@ import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
 import { useStudioStore, CameraPreset } from "@/store/useStudioStore";
 import { ModelViewer } from "./ModelViewer";
+import { UIOverlay } from "./UIOverlay";
+import { SpecSheetModal } from "./SpecSheetModal";
+import { FileUploader } from "./FileUploader";
 import { Loader2 } from "lucide-react";
 
 // Camera Controller with Real-World Honda CG 125 Angles
@@ -183,9 +186,14 @@ interface ConfiguratorCanvasProps {
   canvasRef?: React.RefObject<HTMLCanvasElement>;
 }
 
-export function ConfiguratorCanvas({ canvasRef }: ConfiguratorCanvasProps) {
+export function ConfiguratorCanvas({ canvasRef: externalCanvasRef }: ConfiguratorCanvasProps = {}) {
+  const internalCanvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef = externalCanvasRef || internalCanvasRef;
   const autoRotate = useStudioStore((state) => state.autoRotate);
   const toggleAutoRotate = useStudioStore((state) => state.toggleAutoRotate);
+  const setCapturedImage = useStudioStore((state) => state.setCapturedImage);
+  const buildSerial = useStudioStore((state) => state.buildSerial);
+  const currentModel = useStudioStore((state) => state.getCurrentModel());
 
   // Turntable enabled on initial mount
   useEffect(() => {
@@ -194,6 +202,43 @@ export function ConfiguratorCanvas({ canvasRef }: ConfiguratorCanvasProps) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Instant Snapshot Capture with Clean Studio Watermark
+  const handleCaptureSnapshot = useCallback(() => {
+    const canvas = canvasRef.current || document.querySelector("canvas");
+    if (!canvas) return;
+
+    try {
+      // Create offscreen canvas to stamp clean watermark
+      const exportCanvas = document.createElement("canvas");
+      exportCanvas.width = canvas.width;
+      exportCanvas.height = canvas.height;
+      const ctx = exportCanvas.getContext("2d");
+
+      if (ctx) {
+        // Draw 3D scene
+        ctx.drawImage(canvas, 0, 0);
+
+        // Draw clean studio watermark
+        const fontSize = Math.max(16, Math.round(canvas.width / 45));
+        ctx.font = `600 ${fontSize}px sans-serif`;
+        ctx.fillStyle = "rgba(15, 23, 42, 0.75)";
+        ctx.textAlign = "right";
+        ctx.fillText("Built via Aliyan 3D Studio", canvas.width - 30, canvas.height - 30);
+
+        const dataUrl = exportCanvas.toDataURL("image/png");
+        setCapturedImage(dataUrl);
+
+        // Download trigger
+        const link = document.createElement("a");
+        link.download = `${currentModel.id}_${buildSerial}_AliyanStudio.png`;
+        link.href = dataUrl;
+        link.click();
+      }
+    } catch (err) {
+      console.error("Snapshot capture failed:", err);
+    }
+  }, [canvasRef, setCapturedImage, buildSerial, currentModel.id]);
 
   return (
     <div className="relative w-full h-full select-none overflow-hidden bg-white">
@@ -237,6 +282,18 @@ export function ConfiguratorCanvas({ canvasRef }: ConfiguratorCanvasProps) {
           <CameraRig />
         </Canvas>
       </Suspense>
+
+      {/* Floating UI HUD (Brand & Model Pickers, Bottom Floating Dock) */}
+      <UIOverlay onCaptureSnapshot={handleCaptureSnapshot} />
+
+      {/* Mechanic-Ready Printable Spec Sheet Modal */}
+      <SpecSheetModal />
+
+      {/* Universal Generic 3D Model File Uploader */}
+      <FileUploader />
     </div>
   );
 }
+
+export default ConfiguratorCanvas;
+

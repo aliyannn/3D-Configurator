@@ -1,17 +1,16 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { Center, Bounds } from "@react-three/drei";
+import { useLoader } from "@react-three/fiber";
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+import { GLTFLoader, DRACOLoader } from "three-stdlib";
 import { StudioMaterialType } from "@/data/modelsCatalog";
 import { useStudioStore } from "@/store/useStudioStore";
 import { cyberAudio } from "@/lib/audio";
 
 interface DynamicViewerProps {
   url: string;
-  onMeshListExtracted?: (meshNames: string[]) => void;
   onMeshClick?: (meshName: string) => void;
   selectedPart?: string | null;
   partColors: Record<string, string>;
@@ -20,76 +19,59 @@ interface DynamicViewerProps {
 
 export function DynamicModelViewer({
   url,
-  onMeshListExtracted,
   onMeshClick,
   selectedPart,
   partColors,
   partFinishes,
 }: DynamicViewerProps) {
-  const [modelScene, setModelScene] = useState<THREE.Group | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
   const soundEnabled = useStudioStore((state) => state.soundEnabled);
+  const lastExtractedUrlRef = useRef<string | null>(null);
 
-  useEffect(() => {
-    if (!url) return;
-
-    let isMounted = true;
-    const loader = new GLTFLoader();
-
-    // Configure Draco Loader for compressed Sketchfab models
+  // Safely load via R3F's useLoader with DRACO decoder from three-stdlib
+  const gltf = useLoader(GLTFLoader, url, (loader) => {
     const dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.6/");
     loader.setDRACOLoader(dracoLoader);
+  });
 
-    loader.load(
-      url,
-      (gltf) => {
-        if (!isMounted) {
-          dracoLoader.dispose();
-          return;
+  // Clone scene so multiple instances or material mutations do not mutate cache
+  const scene = useMemo(() => {
+    if (!gltf?.scene) return null;
+    return gltf.scene.clone(true);
+  }, [gltf]);
+
+  // Extract detected meshes and register with Zustand store safely outside the render loop
+  useEffect(() => {
+    if (!scene || lastExtractedUrlRef.current === url) return;
+    lastExtractedUrlRef.current = url;
+
+    const detectedMeshes: string[] = [];
+    scene.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mesh = child as THREE.Mesh;
+        const name = mesh.name || `Part_${detectedMeshes.length + 1}`;
+        mesh.name = name;
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        if (!detectedMeshes.includes(name)) {
+          detectedMeshes.push(name);
         }
-
-        const scene = gltf.scene;
-        const detectedMeshes: string[] = [];
-
-        scene.traverse((child) => {
-          if ((child as THREE.Mesh).isMesh) {
-            const mesh = child as THREE.Mesh;
-            const name = mesh.name || `Part_${detectedMeshes.length + 1}`;
-            mesh.name = name;
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
-            if (!detectedMeshes.includes(name)) {
-              detectedMeshes.push(name);
-            }
-          }
-        });
-
-        setModelScene(scene);
-        setLoadError(null);
-        if (onMeshListExtracted) {
-          onMeshListExtracted(detectedMeshes);
-        }
-      },
-      undefined,
-      (err) => {
-        if (!isMounted) return;
-        console.error("Error loading GLTF:", err);
-        setLoadError("Failed to parse 3D file. Please ensure it is a valid .glb or .gltf model.");
       }
-    );
+    });
 
-    return () => {
-      isMounted = false;
-      dracoLoader.dispose();
-    };
-  }, [url, onMeshListExtracted]);
+    // Schedule state update outside R3F render loop to prevent concurrency conflicts
+    const timeoutId = setTimeout(() => {
+      useStudioStore.getState().updateDetectedMeshes(detectedMeshes);
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
+  }, [scene, url]);
 
   // Apply real-time material & color updates
   useEffect(() => {
-    if (!modelScene) return;
+    if (!scene) return;
 
-    modelScene.traverse((child) => {
+    scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
         const color = partColors[mesh.name];
@@ -125,16 +107,15 @@ export function DynamicModelViewer({
         }
       }
     });
-  }, [modelScene, partColors, partFinishes, selectedPart]);
+  }, [scene, partColors, partFinishes, selectedPart]);
 
-  if (loadError) return null;
-  if (!modelScene) return null;
+  if (!scene) return null;
 
   return (
     <Bounds fit clip margin={1.2} observe>
       <Center top>
         <primitive
-          object={modelScene}
+          object={scene}
           onClick={(e: any) => {
             e.stopPropagation();
             if (e.object?.name && onMeshClick) {

@@ -12,7 +12,7 @@ import {
   Loader2,
   Sparkles,
 } from "lucide-react";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { GLTFLoader } from "three-stdlib";
 import * as THREE from "three";
 import { cyberAudio } from "@/lib/audio";
 

@@ -19,7 +19,7 @@ import { SceneModelManager } from "./SceneModelManager";
 import { Loader2, UploadCloud } from "lucide-react";
 import { cyberAudio } from "@/lib/audio";
 import { PartDefinition } from "@/data/modelsCatalog";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { GLTFLoader } from "three-stdlib";
 
 // Smooth Camera Controller
 function CameraController() {

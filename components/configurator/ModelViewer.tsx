@@ -51,14 +51,15 @@ export function ModelViewer() {
   if (activeModelId === "custom" && customGlb?.url) {
     return (
       <ModelErrorBoundary fallback={<HondaCG125Model />}>
-        <DynamicModelViewer
-          url={customGlb.url}
-          selectedPart={activePartId}
-          partColors={partColors}
-          partFinishes={partFinishes}
-          onMeshListExtracted={updateDetectedMeshes}
-          onMeshClick={setActivePartId}
-        />
+        <React.Suspense fallback={null}>
+          <DynamicModelViewer
+            url={customGlb.url}
+            selectedPart={activePartId}
+            partColors={partColors}
+            partFinishes={partFinishes}
+            onMeshClick={setActivePartId}
+          />
+        </React.Suspense>
       </ModelErrorBoundary>
     );
   }

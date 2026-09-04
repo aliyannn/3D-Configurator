@@ -8,6 +8,7 @@ import {
   Environment,
   AdaptiveDpr,
   AdaptiveEvents,
+  useProgress,
 } from "@react-three/drei";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
@@ -167,7 +168,7 @@ function WhiteStudioLighting() {
   );
 }
 
-// Elegant Studio Loader
+// Elegant Studio Loader for initial WebGL mount
 function StudioLoader() {
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/90 backdrop-blur-md z-20 select-none">
@@ -176,7 +177,50 @@ function StudioLoader() {
         <Loader2 className="w-5 h-5 text-red-600 animate-pulse" />
       </div>
       <p className="text-xs font-bold text-slate-800 font-mono tracking-wider uppercase">
-        Loading Honda CG 125 Model...
+        Initializing 3D Showroom...
+      </p>
+    </div>
+  );
+}
+
+// Live Real-Time 3D Asset Loading Overlay with Percentage
+function StudioProgressOverlay() {
+  const { active, progress } = useProgress();
+  const currentModel = useStudioStore((state) => state.getCurrentModel());
+  const [visible, setVisible] = React.useState(false);
+
+  useEffect(() => {
+    if (active) {
+      setVisible(true);
+    } else {
+      const timer = setTimeout(() => setVisible(false), 350);
+      return () => clearTimeout(timer);
+    }
+  }, [active]);
+
+  if (!visible) return null;
+
+  const pct = Math.min(100, Math.round(progress));
+
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/95 backdrop-blur-md z-30 select-none animate-in fade-in duration-200">
+      <div className="relative flex items-center justify-center mb-4">
+        <div className="w-16 h-16 rounded-full border-4 border-slate-200 border-t-red-600 animate-spin" />
+        <span className="absolute text-xs font-mono font-bold text-slate-800">
+          {pct}%
+        </span>
+      </div>
+      <p className="text-xs font-bold text-slate-900 font-mono tracking-wider uppercase mb-2">
+        Loading {currentModel.title}
+      </p>
+      <div className="w-56 h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200 shadow-inner">
+        <div
+          className="h-full bg-red-600 rounded-full transition-all duration-300 ease-out"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <p className="text-[10px] text-slate-400 font-mono mt-2">
+        {pct}% streaming 3D showroom geometry & textures
       </p>
     </div>
   );
@@ -204,7 +248,7 @@ export function ConfiguratorCanvas({ canvasRef: externalCanvasRef }: Configurato
   }, []);
 
   // Instant Snapshot Capture with Clean Studio Watermark
-  const handleCaptureSnapshot = useCallback(() => {
+  const handleCaptureSnapshot = useCallback((download = true) => {
     const canvas = canvasRef.current || document.querySelector("canvas");
     if (!canvas) return;
 
@@ -230,10 +274,12 @@ export function ConfiguratorCanvas({ canvasRef: externalCanvasRef }: Configurato
         setCapturedImage(dataUrl);
 
         // Download trigger
-        const link = document.createElement("a");
-        link.download = `${currentModel.id}_${buildSerial}_AliyanStudio.png`;
-        link.href = dataUrl;
-        link.click();
+        if (download) {
+          const link = document.createElement("a");
+          link.download = `${currentModel.id}_${buildSerial}_AliyanStudio.png`;
+          link.href = dataUrl;
+          link.click();
+        }
       }
     } catch (err) {
       console.error("Snapshot capture failed:", err);
@@ -282,6 +328,9 @@ export function ConfiguratorCanvas({ canvasRef: externalCanvasRef }: Configurato
           <CameraRig />
         </Canvas>
       </Suspense>
+
+      {/* Real-Time 3D Asset Loading Progress Bar */}
+      <StudioProgressOverlay />
 
       {/* Floating UI HUD (Brand & Model Pickers, Bottom Floating Dock) */}
       <UIOverlay onCaptureSnapshot={handleCaptureSnapshot} />

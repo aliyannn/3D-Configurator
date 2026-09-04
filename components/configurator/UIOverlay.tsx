@@ -33,7 +33,7 @@ const SPEC_SHEET_ANGLES: { id: CameraPreset; label: string; icon: string }[] = [
 ];
 
 interface UIOverlayProps {
-  onCaptureSnapshot: () => void;
+  onCaptureSnapshot: (download?: boolean) => void;
 }
 
 export function UIOverlay({ onCaptureSnapshot }: UIOverlayProps) {
@@ -186,6 +186,7 @@ export function UIOverlay({ onCaptureSnapshot }: UIOverlayProps) {
           <button
             onClick={() => {
               if (soundEnabled) cyberAudio.playSelect();
+              onCaptureSnapshot(false);
               setSpecModalOpen(true);
             }}
             className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-lg transition-all active:scale-95"

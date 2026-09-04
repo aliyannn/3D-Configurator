@@ -2,35 +2,10 @@
 
 import React, { useEffect, useMemo, useRef } from "react";
 import { Center, Bounds, useGLTF } from "@react-three/drei";
-import { useLoader } from "@react-three/fiber";
 import * as THREE from "three";
-import { GLTFLoader, DRACOLoader } from "three-stdlib";
 import { StudioMaterialType } from "@/data/modelsCatalog";
 import { useStudioStore } from "@/store/useStudioStore";
 import { cyberAudio } from "@/lib/audio";
-
-// Preload all studio catalog assets to eliminate loading lag
-if (typeof window !== "undefined") {
-  const PRELOAD_ASSETS = [
-    "/models/cg125.glb",
-    "/models/honda_cbr650r.glb",
-    "/models/honda_nr750_1994.glb",
-    "/models/honda_shadow_rs_2010.glb",
-    "/models/1991_honda_civic_eg6.glb",
-    "/models/1999_honda_civic_si.glb",
-    "/models/2001_honda_s2000.glb",
-    "/models/honda_civic_type-r.glb",
-    "/models/honda_integra_db8_type-r.glb",
-    "/models/honda_s800.glb",
-  ];
-  PRELOAD_ASSETS.forEach((assetPath) => {
-    try {
-      useGLTF.preload(assetPath);
-    } catch {
-      // safe fallback
-    }
-  });
-}
 
 interface DynamicViewerProps {
   url: string;
@@ -50,18 +25,14 @@ export function DynamicModelViewer({
   const soundEnabled = useStudioStore((state) => state.soundEnabled);
   const lastExtractedUrlRef = useRef<string | null>(null);
 
-  // Safely load via R3F's useLoader with DRACO decoder from three-stdlib
-  const gltf = useLoader(GLTFLoader, url, (loader) => {
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.6/");
-    loader.setDRACOLoader(dracoLoader);
-  });
+  // Load asset via useGLTF with built-in cache, progress reporting, and DRACO
+  const { scene: rawScene } = useGLTF(url);
 
   // Clone scene so multiple instances or material mutations do not mutate cache
   const scene = useMemo(() => {
-    if (!gltf?.scene) return null;
-    return gltf.scene.clone(true);
-  }, [gltf]);
+    if (!rawScene) return null;
+    return rawScene.clone(true);
+  }, [rawScene]);
 
   // Extract detected meshes and register with Zustand store safely outside the render loop
   useEffect(() => {

@@ -19,6 +19,7 @@ import {
   RotateCw,
 } from "lucide-react";
 import { cyberAudio } from "@/lib/audio";
+import { useGLTF } from "@react-three/drei";
 
 const BRANDS: VehicleBrand[] = ["Honda", "Toyota"];
 
@@ -62,8 +63,24 @@ export function UIOverlay({ onCaptureSnapshot }: UIOverlayProps) {
   const currentBrand = currentModel.brand;
   const brandModels = MODELS_CATALOG.filter((m) => m.brand === currentBrand);
 
+  // Intelligent on-hover cache prefetching for instant model switching
+  const warmBrandModels = (brand: VehicleBrand) => {
+    if (typeof window === "undefined") return;
+    const targets = MODELS_CATALOG.filter((m) => m.brand === brand && m.modelUrl);
+    targets.forEach((m) => {
+      if (m.modelUrl) {
+        try {
+          useGLTF.preload(m.modelUrl);
+        } catch {
+          // safe ignore
+        }
+      }
+    });
+  };
+
   const handleBrandChange = (brand: VehicleBrand) => {
     if (soundEnabled) cyberAudio.playSelect();
+    warmBrandModels(brand);
     const firstModel = MODELS_CATALOG.find((m) => m.brand === brand);
     if (firstModel) {
       setActiveModelId(firstModel.id);
@@ -72,6 +89,12 @@ export function UIOverlay({ onCaptureSnapshot }: UIOverlayProps) {
 
   const handleModelChange = (modelId: string) => {
     if (soundEnabled) cyberAudio.playSelect();
+    const targetModel = MODELS_CATALOG.find((m) => m.id === modelId);
+    if (targetModel?.modelUrl) {
+      try {
+        useGLTF.preload(targetModel.modelUrl);
+      } catch {}
+    }
     setActiveModelId(modelId);
   };
 
@@ -108,6 +131,8 @@ export function UIOverlay({ onCaptureSnapshot }: UIOverlayProps) {
             <select
               value={currentBrand}
               onChange={(e) => handleBrandChange(e.target.value as VehicleBrand)}
+              onMouseEnter={() => warmBrandModels(currentBrand)}
+              onFocus={() => warmBrandModels(currentBrand)}
               className="bg-transparent text-xs font-bold text-slate-800 outline-none cursor-pointer"
             >
               {BRANDS.map((b) => (
@@ -119,13 +144,18 @@ export function UIOverlay({ onCaptureSnapshot }: UIOverlayProps) {
           </div>
 
           {/* Model Selector */}
-          <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/95 border border-slate-200 shadow-md backdrop-blur-md">
+          <div
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/95 border border-slate-200 shadow-md backdrop-blur-md"
+            onMouseEnter={() => warmBrandModels(currentBrand)}
+          >
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
               Model:
             </span>
             <select
               value={currentModel.id}
               onChange={(e) => handleModelChange(e.target.value)}
+              onMouseEnter={() => warmBrandModels(currentBrand)}
+              onFocus={() => warmBrandModels(currentBrand)}
               className="bg-transparent text-xs font-bold text-slate-900 outline-none cursor-pointer max-w-[220px] truncate"
             >
               {brandModels.some((m) => m.category === "motorcycles") && (

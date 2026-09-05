@@ -9,10 +9,12 @@ import {
   AdaptiveDpr,
   AdaptiveEvents,
   useProgress,
+  useGLTF,
 } from "@react-three/drei";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
 import { useStudioStore, CameraPreset } from "@/store/useStudioStore";
+import { MODELS_CATALOG } from "@/data/modelsCatalog";
 import { ModelViewer } from "./ModelViewer";
 import { UIOverlay } from "./UIOverlay";
 import { SpecSheetModal } from "./SpecSheetModal";
@@ -246,6 +248,39 @@ export function ConfiguratorCanvas({ canvasRef: externalCanvasRef }: Configurato
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Idle sequential background cache warming: Pre-fetches remaining catalog models
+  // only after initial mount has settled, spaced out by 2.5s to avoid network contention
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const startTimer = setTimeout(() => {
+      const remainingModels = MODELS_CATALOG.filter(
+        (m) => m.modelUrl && m.id !== currentModel.id
+      );
+
+      let idx = 0;
+      const interval = setInterval(() => {
+        if (idx >= remainingModels.length) {
+          clearInterval(interval);
+          return;
+        }
+        const model = remainingModels[idx];
+        if (model?.modelUrl) {
+          try {
+            useGLTF.preload(model.modelUrl);
+          } catch {
+            // safe ignore
+          }
+        }
+        idx++;
+      }, 2500);
+
+      return () => clearInterval(interval);
+    }, 4500);
+
+    return () => clearTimeout(startTimer);
+  }, [currentModel.id]);
 
   // Instant Snapshot Capture with Clean Studio Watermark
   const handleCaptureSnapshot = useCallback((download = true) => {
